@@ -64,8 +64,6 @@ tasks {
             jvmTarget = "11"
         }
     }
-
-
 }
 sourceSets {
     main {
