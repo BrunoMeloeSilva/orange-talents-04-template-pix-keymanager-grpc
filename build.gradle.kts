@@ -65,6 +65,7 @@ tasks {
         }
     }
 }
+
 sourceSets {
     main {
         java {

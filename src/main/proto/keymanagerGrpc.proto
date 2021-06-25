@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "br.com.zup";
+option java_outer_classname = "KeymanagerGrpc";
+
+package br.com.zup;
+
+/* CADASTRAR CHAVE PIX */
+service CadastrarChavePix {
+  rpc cadastrar (CadastrarChavePixRequest) returns (CadastrarChavePixResponse) {}
+}
+
+enum TipoChavePix {
+  TIPO_CHAVE_PIX_NAO_DEFINIDO = 0;
+  CPF = 1;
+  CELULAR = 2;
+  EMAIL = 3;
+  ALEATORIA = 4;
+}
+
+enum TipoContaBancaria {
+  TIPO_CONTA_NAO_DEFINIDO = 0;
+  CONTA_CORRENTE = 1;
+  CONTA_POUPANCA = 2;
+}
+
+message CadastrarChavePixRequest {
+  string idClienteBancario  = 1;
+  string tipoChavePix  = 2;
+  string valorChavePix = 3;
+  string tipoContaBancaria = 4;
+}
+
+message CadastrarChavePixResponse {
+  string pixId = 1;
+}
