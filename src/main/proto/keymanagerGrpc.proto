@@ -35,3 +35,17 @@ message CadastrarChavePixRequest {
 message CadastrarChavePixResponse {
   string pixId = 1;
 }
+
+/* DELETAR CHAVE PIX */
+service DeletarChavePix {
+  rpc deletar (DeletarChavePixRequest) returns (DeletarChavePixResponse) {}
+}
+
+message DeletarChavePixRequest {
+  string pixId = 1;
+  string idClienteBancario  = 2;
+}
+
+message DeletarChavePixResponse {
+  bool deletado = 1;
+}
