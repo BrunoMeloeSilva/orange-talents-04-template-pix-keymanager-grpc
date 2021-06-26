@@ -43,6 +43,8 @@ dependencies {
     implementation("org.hibernate.validator:hibernate-validator:7.0.1.Final")
     implementation("org.mariadb.jdbc:mariadb-java-client")
     implementation("io.micronaut:micronaut-http-client")
+    testImplementation("org.mockito:mockito-core:3.8.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:3.11.1")
 
 }
 
