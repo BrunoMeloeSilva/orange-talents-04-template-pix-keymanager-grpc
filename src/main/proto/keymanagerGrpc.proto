@@ -27,9 +27,9 @@ enum TipoContaBancaria {
 
 message CadastrarChavePixRequest {
   string idClienteBancario  = 1;
-  string tipoChavePix  = 2;
+  TipoChavePix tipoChavePix  = 2;
   string valorChavePix = 3;
-  string tipoContaBancaria = 4;
+  TipoContaBancaria tipoContaBancaria = 4;
 }
 
 message CadastrarChavePixResponse {

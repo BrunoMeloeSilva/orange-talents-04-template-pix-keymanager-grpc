@@ -38,10 +38,11 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.h2database:h2")
     implementation("io.micronaut:micronaut-validation")
-
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-
     testImplementation("io.micronaut:micronaut-http-client")
+    implementation("org.hibernate.validator:hibernate-validator:7.0.1.Final")
+    implementation("org.mariadb.jdbc:mariadb-java-client")
+    implementation("io.micronaut:micronaut-http-client")
 
 }
 
