@@ -8,6 +8,8 @@ import br.com.zup.cadastro.PixDto
 import br.com.zup.cadastro.PixRepository
 import br.com.zup.external.itau.DadosDaContaResponse
 import br.com.zup.external.itau.ErpItauExternalRequest
+import br.com.zup.utils.getCadastrarChavePixRequest
+import br.com.zup.utils.getDadosDaContaResponse
 import io.grpc.Channel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -201,31 +203,6 @@ internal class CadastrarChavePixEndPointTest(
     @MockBean(ErpItauExternalRequest::class)
     fun erpItauExternalRequestMock(): ErpItauExternalRequest{
         return Mockito.mock(ErpItauExternalRequest::class.java)
-    }
-
-    private fun getCadastrarChavePixRequest(tipoChavePix: TipoChavePix, valorChavePix: String): CadastrarChavePixRequest{
-        return CadastrarChavePixRequest.newBuilder()
-            .setIdClienteBancario("c56dfef4-7901-44fb-84e2-a2cefb157890")
-            .setTipoChavePix(tipoChavePix)
-            .setValorChavePix(valorChavePix)
-            .setTipoContaBancaria(TipoContaBancaria.CONTA_CORRENTE)
-            .build()
-    }
-
-    private fun getDadosDaContaResponse(cadastrarChavePixRequest: CadastrarChavePixRequest): DadosDaContaResponse{
-        return DadosDaContaResponse(cadastrarChavePixRequest.tipoContaBancaria.name,
-            DadosDaContaResponse.Instituicao(
-                "ITAÚ UNIBANCO S.A.",
-                "60701190"
-            ),
-            "0001",
-            "291900",
-            DadosDaContaResponse.Titular(
-                UUID.fromString(cadastrarChavePixRequest.idClienteBancario),
-                "Rafael M C Ponte",
-                "02467781054"
-            )
-        )
     }
 
     private fun `Nao deve cadastrar ChavePix com valor invalido`(tipoChavePix: TipoChavePix,
