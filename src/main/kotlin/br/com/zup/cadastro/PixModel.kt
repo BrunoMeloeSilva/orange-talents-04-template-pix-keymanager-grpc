@@ -31,9 +31,4 @@ class PixModel(
 
     @Column(nullable = false)
     val dataCriacao: LocalDateTime = LocalDateTime.now()
-
-    init {
-        if (TipoChavePix.ALEATORIA == tipoChavePix)
-            valorChavePix = java.util.UUID.randomUUID().toString()
-    }
 }

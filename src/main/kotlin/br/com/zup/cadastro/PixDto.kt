@@ -18,7 +18,7 @@ data class PixDto(
     val tipoChavePix: TipoChavePix,
     @field:Size(max = 77, message = "O valor máximo é 77 caracteres.")
     @field:UniqueValue(table = "PixModel", field = "valorChavePix")
-    val valorChavePix: String,
+    var valorChavePix: String,
     @field:EnumInterval(from = 1, to = 2, message = "Os valores permitidos são: CONTA_CORRENTE = 1, CONTA_POUPANCA = 2.")
     val tipoContaBancaria: TipoContaBancaria,
 ){
