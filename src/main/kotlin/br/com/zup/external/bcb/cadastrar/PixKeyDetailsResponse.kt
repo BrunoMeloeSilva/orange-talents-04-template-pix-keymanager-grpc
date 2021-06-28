@@ -1,4 +1,4 @@
-package br.com.zup.external.bcb
+package br.com.zup.external.bcb.cadastrar
 
 import java.time.LocalDateTime
 

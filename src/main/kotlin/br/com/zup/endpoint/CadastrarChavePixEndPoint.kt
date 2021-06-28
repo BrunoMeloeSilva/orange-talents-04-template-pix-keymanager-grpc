@@ -4,6 +4,7 @@ import br.com.zup.*
 import br.com.zup.cadastro.PixDto
 import br.com.zup.cadastro.PixRepository
 import br.com.zup.external.bcb.*
+import br.com.zup.external.bcb.cadastrar.*
 import br.com.zup.external.itau.DadosDaContaResponse
 import br.com.zup.external.itau.ErpItauExternalRequest
 import br.com.zup.shared.ErrorHandler

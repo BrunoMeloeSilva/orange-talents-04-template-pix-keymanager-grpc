@@ -8,7 +8,8 @@ data class DeletaPixDtoIn(
     @field:ValidUUID
     val pixId: String?,
     @field:ValidUUID
-    val idClienteBancario: String?
+    val idClienteBancario: String?,
 ){
     var id: Long? = null
+    var valorChavePix: String? = null
 }

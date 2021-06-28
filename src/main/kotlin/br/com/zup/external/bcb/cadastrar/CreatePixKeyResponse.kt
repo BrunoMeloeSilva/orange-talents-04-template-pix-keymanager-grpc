@@ -1,10 +1,13 @@
-package br.com.zup.external.bcb
+package br.com.zup.external.bcb.cadastrar
 
-data class CreatePixKeyRequest(
+import java.time.LocalDateTime
+
+data class CreatePixKeyResponse(
     val keyType: KeyType?,
     val key: String?,
     val bankAccount: BankAccount?,
     val owner: Owner?,
+    val createdAt: LocalDateTime?
 ){
     data class BankAccount(
         val participant: String?,

@@ -14,5 +14,6 @@ datasources:
 jpa.default.properties.hibernate.hbm2ddl.auto: create-drop
 
 itau.erp.url: http://localhost:9091
+itau.ispb: 60701190
 
 bcb.url: http://localhost:8082

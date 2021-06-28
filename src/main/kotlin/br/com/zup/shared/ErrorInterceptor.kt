@@ -1,5 +1,6 @@
 package br.com.zup.shared
 
+import br.com.zup.shared.exception.RegrasNegociosException
 import br.com.zup.shared.exception.ValorJaExisteException
 import br.com.zup.shared.exception.ValorNaoExisteException
 import io.grpc.Status
@@ -29,6 +30,11 @@ class ErrorInterceptor : MethodInterceptor<Any, Any> {
                     .asRuntimeException()
 
                 is ValorNaoExisteException -> Status.NOT_FOUND
+                    .withCause(error)
+                    .withDescription(error.message)
+                    .asRuntimeException()
+
+                is RegrasNegociosException -> Status.DATA_LOSS
                     .withCause(error)
                     .withDescription(error.message)
                     .asRuntimeException()
