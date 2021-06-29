@@ -41,7 +41,7 @@ class ErrorInterceptor : MethodInterceptor<Any, Any> {
 
                 else -> Status.UNKNOWN
                     .withCause(error)
-                    .withDescription("Erro inesperado.")
+                    .withDescription("Erro inesperado. É provavel que algum serviço terceiro que se comunica conosco, esteja fora do ar.")
                     .asRuntimeException()
             }
             val responseObserver = context.parameterValues[1] as StreamObserver<*>

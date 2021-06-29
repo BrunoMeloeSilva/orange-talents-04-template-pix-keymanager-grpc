@@ -6,6 +6,8 @@ option java_outer_classname = "KeymanagerGrpc";
 
 package br.com.zup;
 
+import "google/protobuf/timestamp.proto";
+
 /* CADASTRAR CHAVE PIX */
 service CadastrarChavePix {
   rpc cadastrar (CadastrarChavePixRequest) returns (CadastrarChavePixResponse) {}
@@ -48,4 +50,41 @@ message DeletarChavePixRequest {
 
 message DeletarChavePixResponse {
   bool deletado = 1;
+}
+
+/* CONSULTAR CHAVE PIX via KeyManager*/
+service ConsultarChavePix {
+  rpc consultaPorPixIdAndIdClienteBancario (ConsultaPixIdAndIdClienteBancarioRequest) returns (ConsultarChavePixResponse) {}
+  rpc consultaPorChavePix (ConsultaChavePixRequest) returns (ConsultarChavePixResponse) {}
+}
+
+message ConsultaPixIdAndIdClienteBancarioRequest {
+  string pixId = 1;
+  string idClienteBancario  = 2;
+}
+
+message ConsultarChavePixResponse {
+  string pixId = 1;
+  string idClienteBancario = 2;
+  string tipoChavePix  = 3;
+  string valorChavePix = 4;
+
+  message Titular {
+    string nome = 1;
+    string cpf = 2;
+  }
+  Titular titular = 5;
+
+  message ContaBancaria {
+    string banco = 1;
+    string agencia = 2;
+    string numero = 3;
+    string tipo = 4;
+  }
+  ContaBancaria contaBancaria = 6;
+  google.protobuf.Timestamp criadoEm = 7;
+}
+
+message ConsultaChavePixRequest {
+  string valorChavePix = 1;
 }

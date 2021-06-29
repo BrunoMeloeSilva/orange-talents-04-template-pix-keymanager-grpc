@@ -11,6 +11,7 @@ import br.com.zup.external.bcb.deletar.DeletePixKeyRequest
 import br.com.zup.shared.ErrorHandler
 import br.com.zup.shared.exception.RegrasNegociosException
 import br.com.zup.shared.exception.ValorNaoExisteException
+import br.com.zup.shared.utils.validacoesDeEntradaDosDados
 import io.grpc.stub.StreamObserver
 import io.micronaut.context.annotation.Value
 import io.micronaut.http.HttpStatus
@@ -55,7 +56,7 @@ class DeletarChavePixEndPoint(
 private fun DeletarChavePixRequest.realizaAsValidacoes(validator: Validator,
                                                       pixRepository: PixRepository): DeletaPixDtoIn {
     val deletaPixDtoIn = DeletaPixDtoIn(this.pixId, this.idClienteBancario, )
-    validaDadosDeEntrada(validator, deletaPixDtoIn)
+    validacoesDeEntradaDosDados(validator, deletaPixDtoIn)
 
     val pixModel = validaSePixIdExisteParaIdClienteBancario(pixRepository, deletaPixDtoIn)
 
@@ -74,13 +75,4 @@ private fun validaSePixIdExisteParaIdClienteBancario(
     if (pixModel.isEmpty)
         throw ValorNaoExisteException("Não foi encontrado o [pixId] para o [idClienteBancario] informado.")
     return pixModel
-}
-
-private fun validaDadosDeEntrada(
-    validator: Validator,
-    deletaPixDtoIn: DeletaPixDtoIn,
-) {
-    val errosValidacao = validator.validate(deletaPixDtoIn)
-    if (errosValidacao.isNotEmpty())
-        throw ConstraintViolationException(errosValidacao)
 }

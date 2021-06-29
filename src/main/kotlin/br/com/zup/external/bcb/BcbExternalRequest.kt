@@ -2,7 +2,7 @@ package br.com.zup.external.bcb
 
 import br.com.zup.external.bcb.cadastrar.CreatePixKeyRequest
 import br.com.zup.external.bcb.cadastrar.CreatePixKeyResponse
-import br.com.zup.external.bcb.cadastrar.PixKeyDetailsResponse
+import br.com.zup.external.bcb.consultar.PixKeyDetailsResponse
 import br.com.zup.external.bcb.deletar.DeletePixKeyRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
@@ -20,4 +20,8 @@ interface BcbExternalRequest {
     @Delete(value = "/api/v1/pix/keys/{valorChavePix}",
             produces = [MediaType.APPLICATION_XML])
     fun deletaChavePixBCB(@PathVariable valorChavePix: String, @Body deletePixKeyRequest: DeletePixKeyRequest): HttpResponse<String>
+
+    @Get(value = "/api/v1/pix/keys/{valorChavePix}",
+        consumes = [MediaType.APPLICATION_XML])
+    fun consultaChavePixBCB(@PathVariable valorChavePix: String): HttpResponse<PixKeyDetailsResponse>
 }

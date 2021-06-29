@@ -3,6 +3,8 @@ package br.com.zup.endpoint
 import br.com.zup.*
 import br.com.zup.cadastro.PixDto
 import br.com.zup.cadastro.PixRepository
+import br.com.zup.cadastro.utils.convertToAccountTypeBCB
+import br.com.zup.cadastro.utils.convertToKeyTypeBCB
 import br.com.zup.external.bcb.*
 import br.com.zup.external.bcb.cadastrar.*
 import br.com.zup.external.itau.DadosDaContaResponse
@@ -10,6 +12,8 @@ import br.com.zup.external.itau.ErpItauExternalRequest
 import br.com.zup.shared.ErrorHandler
 import br.com.zup.shared.exception.ValorJaExisteException
 import br.com.zup.shared.exception.ValorNaoExisteException
+import br.com.zup.shared.utils.validacoesDeEntradaDosDados
+import br.com.zup.shared.utils.verificaSeIdClienteBancarioAndTipoContaBancariaExisteNoErpItau
 import io.grpc.stub.StreamObserver
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -50,21 +54,16 @@ private fun CadastrarChavePixRequest
 
     validacoesDeEntradaDosDados(validator, pixDtoEntrada)
 
-    val dadosDaContaResponse = verificaSeIdClienteBancarioAndTipoContaBancariaExisteNoErpItau(erpItauExternalRequest)
+    val dadosDaContaResponse = verificaSeIdClienteBancarioAndTipoContaBancariaExisteNoErpItau(
+        erpItauExternalRequest,
+        this.idClienteBancario,
+        this.tipoContaBancaria.name
+    )
 
     seChavePixNaoExistirNoBcbRegistra(dadosDaContaResponse, bcbExternalRequest, pixDtoEntrada)
 
     // todo: poderia verificar se o cpf informado é o mesmo do proprietario da conta bancaria.
     return pixDtoEntrada
-}
-
-private fun validacoesDeEntradaDosDados(
-    validator: Validator,
-    pixDtoEntrada: PixDto,
-) {
-    val errosValidacao = validator.validate(pixDtoEntrada)
-    if (errosValidacao.isNotEmpty())
-        throw ConstraintViolationException(errosValidacao)
 }
 
 private fun CadastrarChavePixRequest.seChavePixNaoExistirNoBcbRegistra(
@@ -104,33 +103,4 @@ private fun DadosDaContaResponse.getCreatePixKeyRequest(
         dadosDaContaResponse.titular?.cpf)
 
     return CreatePixKeyRequest(keyTypeBCB, cadastrarChavePixRequest.valorChavePix, bankAccount, owner)
-}
-
-private fun TipoContaBancaria.convertToAccountTypeBCB(): AccountType? {
-    return when(this){
-        TipoContaBancaria.CONTA_CORRENTE -> AccountType.CACC
-        TipoContaBancaria.CONTA_POUPANCA -> AccountType.SVGS
-        else -> null
-    }
-}
-
-private fun TipoChavePix.convertToKeyTypeBCB(): KeyType? {
-    return when(this){
-        TipoChavePix.CPF -> KeyType.CPF
-        TipoChavePix.CELULAR -> KeyType.PHONE
-        TipoChavePix.EMAIL -> KeyType.EMAIL
-        TipoChavePix.ALEATORIA -> KeyType.RANDOM
-        else -> null
-    }
-}
-
-private fun CadastrarChavePixRequest.verificaSeIdClienteBancarioAndTipoContaBancariaExisteNoErpItau(
-    erpItauExternalRequest: ErpItauExternalRequest): DadosDaContaResponse {
-    val responseTipoContaCliente =
-            erpItauExternalRequest.consultaTipoContaCliente(this.idClienteBancario,
-                                                            this.tipoContaBancaria.name)
-        if (responseTipoContaCliente.code() == 404)
-            throw ValorNaoExisteException("O campo [idClienteBancario] e/ou o [tipoContaBancaria] informado(s) não foram encontrados no sistema do Itaú.")
-
-    return responseTipoContaCliente.body()!!
 }

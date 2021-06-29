@@ -8,4 +8,6 @@ import java.util.*
 interface PixRepository : JpaRepository<PixModel, Long> {
 
     fun findByPixIdAndIdClienteBancario(pixId: String, idClienteBancario: String): Optional<PixModel>
+
+    fun findByValorChavePix(valorChavePix: String): Optional<PixModel>
 }

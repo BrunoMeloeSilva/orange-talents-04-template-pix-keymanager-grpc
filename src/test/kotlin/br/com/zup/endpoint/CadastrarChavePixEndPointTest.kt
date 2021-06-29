@@ -6,9 +6,15 @@ import br.com.zup.TipoChavePix
 import br.com.zup.TipoContaBancaria
 import br.com.zup.cadastro.PixDto
 import br.com.zup.cadastro.PixRepository
+import br.com.zup.cadastro.utils.convertToAccountTypeBCB
+import br.com.zup.cadastro.utils.convertToKeyTypeBCB
+import br.com.zup.external.bcb.BcbExternalRequest
+import br.com.zup.external.bcb.cadastrar.*
 import br.com.zup.external.itau.DadosDaContaResponse
 import br.com.zup.external.itau.ErpItauExternalRequest
 import br.com.zup.utils.getCadastrarChavePixRequest
+import br.com.zup.utils.getCreatePixKeyRequest
+import br.com.zup.utils.getCreatePixKeyResponse
 import br.com.zup.utils.getDadosDaContaResponse
 import io.grpc.Channel
 import io.grpc.Status
@@ -18,6 +24,7 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import io.micronaut.validation.validator.Validator
@@ -28,6 +35,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 import javax.validation.ConstraintViolationException
@@ -39,6 +47,8 @@ internal class CadastrarChavePixEndPointTest(
 ) {
     @Inject
     lateinit var erpItauExternalRequestMockado: ErpItauExternalRequest
+    @Inject
+    lateinit var bcbExternalRequestMock: BcbExternalRequest
 
     @BeforeEach
     fun AntesDeCadaTeste(){
@@ -48,6 +58,31 @@ internal class CadastrarChavePixEndPointTest(
     @Test
     fun `Deve cadastrar ChavePix com valor valido para o tipo CPF`(){
         `Deve cadastrar ChavePix com valor valido`(TipoChavePix.CPF, "69226614008")
+    }
+
+    @Test
+    fun `Nao deve cadastrar quando o valor ChavePix ja existir no BCB`(){
+        // Cenario
+        val cadastrarChavePixRequest = getCadastrarChavePixRequest(TipoChavePix.CPF, "69226614008")
+        val dadosDaContaResponse = getDadosDaContaResponse(cadastrarChavePixRequest)
+
+        `when`(erpItauExternalRequestMockado.consultaTipoContaCliente(
+            cadastrarChavePixRequest.idClienteBancario,
+            cadastrarChavePixRequest.tipoContaBancaria.name))
+            .thenReturn(HttpResponse.ok(dadosDaContaResponse))
+
+        `when`(bcbExternalRequestMock.cadastraChavePixBCB(getCreatePixKeyRequest(dadosDaContaResponse, cadastrarChavePixRequest)))
+            .thenThrow(HttpClientResponseException("", HttpResponse.unprocessableEntity<String>()))
+
+        // Acao
+        val assertThrows = assertThrows<StatusRuntimeException> {
+            cadastrarChavePixChannel.cadastrar(cadastrarChavePixRequest)
+        }
+        // Validacao
+        with(assertThrows){
+            assertEquals(Status.ALREADY_EXISTS.code, assertThrows.status.code)
+            assertEquals("A Chave Pix informada, já existe no Banco Central do Brasil.", assertThrows.status.description)
+        }
     }
 
     @Test
@@ -191,6 +226,57 @@ internal class CadastrarChavePixEndPointTest(
         assertNotNull(dadosDaContaResponse.titular!!.cpf)
     }
 
+    @Test
+    fun `Valida o formato do objeto de comunicacao com BCB - CreatePixKeyRequest`(){
+        val keyTypeBCB = KeyType.CPF
+        val bankAccount = CreatePixKeyRequest.BankAccount(
+            "60701190",
+            "0001",
+            "123456",
+            AccountType.CACC)
+        val owner = CreatePixKeyRequest.Owner(
+            Type.NATURAL_PERSON,
+            "Steve Jobs",
+            "33059192057")
+        val createPixKeyRequest = CreatePixKeyRequest(keyTypeBCB, "33059192057", bankAccount, owner)
+
+        assertNotNull(createPixKeyRequest.keyType)
+        assertNotNull(createPixKeyRequest.key)
+        assertNotNull(createPixKeyRequest.bankAccount?.accountNumber)
+        assertNotNull(createPixKeyRequest.bankAccount?.accountType)
+        assertNotNull(createPixKeyRequest.bankAccount?.branch)
+        assertNotNull(createPixKeyRequest.bankAccount?.participant)
+        assertNotNull(createPixKeyRequest.owner?.name)
+        assertNotNull(createPixKeyRequest.owner?.taxIdNumber)
+        assertNotNull(createPixKeyRequest.owner?.type)
+    }
+
+    @Test
+    fun `Valida o formato do objeto de comunicacao com BCB - CreatePixKeyResponse`(){
+        val keyTypeBCB = KeyType.CPF
+        val bankAccount = CreatePixKeyResponse.BankAccount(
+            "60701190",
+            "0001",
+            "123456",
+            AccountType.CACC)
+        val owner = CreatePixKeyResponse.Owner(
+            Type.NATURAL_PERSON,
+            "Steve Jobs",
+            "33059192057")
+        val createPixKeyResponse = CreatePixKeyResponse(keyTypeBCB, "33059192057", bankAccount, owner, LocalDateTime.now())
+
+        assertNotNull(createPixKeyResponse.keyType)
+        assertNotNull(createPixKeyResponse.key)
+        assertNotNull(createPixKeyResponse.bankAccount?.accountNumber)
+        assertNotNull(createPixKeyResponse.bankAccount?.accountType)
+        assertNotNull(createPixKeyResponse.bankAccount?.branch)
+        assertNotNull(createPixKeyResponse.bankAccount?.participant)
+        assertNotNull(createPixKeyResponse.owner?.name)
+        assertNotNull(createPixKeyResponse.owner?.taxIdNumber)
+        assertNotNull(createPixKeyResponse.owner?.type)
+        assertNotNull(createPixKeyResponse.createdAt)
+    }
+
     @Factory
     class CadastrarChavePixFactory{
         @Bean
@@ -203,6 +289,11 @@ internal class CadastrarChavePixEndPointTest(
     @MockBean(ErpItauExternalRequest::class)
     fun erpItauExternalRequestMock(): ErpItauExternalRequest{
         return Mockito.mock(ErpItauExternalRequest::class.java)
+    }
+
+    @MockBean(BcbExternalRequest::class)
+    fun bcbExternalRequestMock(): BcbExternalRequest{
+        return Mockito.mock(BcbExternalRequest::class.java)
     }
 
     private fun `Nao deve cadastrar ChavePix com valor invalido`(tipoChavePix: TipoChavePix,
@@ -225,10 +316,16 @@ internal class CadastrarChavePixEndPointTest(
         // Cenario
         val cadastrarChavePixRequest = getCadastrarChavePixRequest(tipoChavePix, valorChavePix)
         val dadosDaContaResponse = getDadosDaContaResponse(cadastrarChavePixRequest)
+
         `when`(erpItauExternalRequestMockado.consultaTipoContaCliente(
             cadastrarChavePixRequest.idClienteBancario,
             cadastrarChavePixRequest.tipoContaBancaria.name))
             .thenReturn(HttpResponse.ok(dadosDaContaResponse))
+
+        val createPixKeyResponse = getCreatePixKeyResponse(cadastrarChavePixRequest)
+        `when`(bcbExternalRequestMock.cadastraChavePixBCB(getCreatePixKeyRequest(dadosDaContaResponse, cadastrarChavePixRequest)))
+            .thenReturn(HttpResponse.created(createPixKeyResponse))
+
         // Acao
         val cadastrarChavePixResponse = cadastrarChavePixChannel.cadastrar(cadastrarChavePixRequest)
         // Validacao
